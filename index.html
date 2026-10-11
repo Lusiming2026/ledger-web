@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#6750A4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="记账">
+<title>记账</title>
+<style>
+:root{
+  --bg:#f5f5f7;
+  --card:#ffffff;
+  --text:#1c1c1e;
+  --text-2:#8e8e93;
+  --line:#e5e5ea;
+  --primary:#6750a4;
+  --primary-soft:#e8def8;
+  --income:#d32f2f;   /* 涨/收入 红（中国习惯） */
+  --expense:#2e7d32;  /* 跌/支出 绿 */
+  --transfer:#1565c0;
+  --danger:#d32f2f;
+  --warn:#ed6c02;
+  --radius:16px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);
+  --nav-h:56px;
+  --tab-h:64px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--text);
+  font-size:16px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior-y:none;
+}
+#app{max-width:520px;margin:0 auto;height:100%;display:flex;flex-direction:column;position:relative;background:var(--bg)}
+
+/* ---------- 顶部导航 ---------- */
+.topbar{
+  position:sticky;top:0;z-index:20;
+  height:var(--nav-h);
+  display:flex;align-items:center;justify-content:center;
+  background:var(--bg);padding:0 16px;
+}
+.topbar .title{font-size:18px;font-weight:700}
+.topbar .back{position:absolute;left:8px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:none;background:none;color:var(--primary);font-size:22px;cursor:pointer}
+.topbar .act{position:absolute;right:12px;border:none;background:none;color:var(--primary);font-size:14px;font-weight:600;cursor:pointer;padding:6px}
+
+/* ---------- 主内容区 ---------- */
+.main{flex:1;overflow-y:auto;padding:4px 16px calc(var(--tab-h) + var(--safe-b) + 16px)}
+.page{display:none}
+.page.active{display:block;animation:fade .18s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ---------- 底部 Tab ---------- */
+.tabbar{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:520px;height:calc(var(--tab-h) + var(--safe-b));
+  background:var(--card);border-top:1px solid var(--line);
+  display:flex;padding-bottom:var(--safe-b);z-index:30;
+}
+.tabbar .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--text-2);font-size:10px;cursor:pointer;border:none;background:none}
+.tabbar .tab .ic{font-size:22px;line-height:1}
+.tabbar .tab.on{color:var(--primary)}
+.tabbar .tab.fab{flex:0 0 64px}
+.tabbar .fab-btn{
+  width:46px;height:46px;border-radius:50%;border:none;
+  background:linear-gradient(135deg,#7c4dff,#6750a4);color:#fff;
+  font-size:26px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 12px rgba(103,80,164,.4);margin-top:-18px;cursor:pointer;
+}
+
+/* ---------- 通用卡片 ---------- */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:12px}
+.row{display:flex;align-items:center;gap:12px}
+.row.between{justify-content:space-between}
+.grow{flex:1;min-width:0}
+.muted{color:var(--text-2);font-size:13px}
+.small{font-size:12px}
+.bold{font-weight:700}
+.num{font-variant-numeric:tabular-nums;font-weight:700}
+.income-c{color:var(--income)}
+.expense-c{color:var(--expense)}
+.transfer-c{color:var(--transfer)}
+
+/* ---------- 首页 ---------- */
+.hero{background:linear-gradient(135deg,#7c4dff,#5e35b1);color:#fff;border-radius:20px;padding:20px;margin-bottom:12px;box-shadow:0 6px 18px rgba(94,53,177,.3)}
+.hero .lbl{font-size:12px;opacity:.85}
+.hero .balance{font-size:32px;font-weight:800;margin:6px 0 12px;font-variant-numeric:tabular-nums}
+.hero .stats{display:flex;gap:20px}
+.hero .stat .k{font-size:12px;opacity:.8}
+.hero .stat .v{font-size:18px;font-weight:700}
+.budget-bar{height:8px;background:rgba(0,0,0,.08);border-radius:4px;overflow:hidden;margin:8px 0 4px}
+.budget-bar .fill{height:100%;background:#fff;border-radius:4px;transition:width .3s}
+.budget-bar.warn .fill{background:#ffd54f}
+.budget-bar.over .fill{background:#ff5252}
+
+.section-title{font-size:14px;font-weight:700;color:var(--text-2);margin:16px 4px 8px}
+.acc-list .acc{padding:14px 4px;border-bottom:1px solid var(--line)}
+.acc-list .acc:last-child{border-bottom:none}
+.acc .ic{width:40px;height:40px;border-radius:12px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+
+/* ---------- 图标（emoji 兜底，无需外部字体） ---------- */
+.cat-ic{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;color:#fff}
+
+/* ---------- 记账页 ---------- */
+.seg{display:flex;background:#e9e9ed;border-radius:12px;padding:3px;margin-bottom:16px}
+.seg .s{flex:1;text-align:center;padding:8px;border-radius:10px;font-size:14px;font-weight:600;color:var(--text-2);cursor:pointer}
+.seg .s.on{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.amount-input{display:flex;align-items:center;gap:6px;padding:12px 0;border-bottom:2px solid var(--line)}
+.amount-input .cur{font-size:24px;font-weight:700}
+.amount-input input{flex:1;border:none;outline:none;font-size:36px;font-weight:700;font-variant-numeric:tabular-nums;background:none;min-width:0}
+.cat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:12px 0}
+.cat-grid .c{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.cat-grid .c .ic{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff}
+.cat-grid .c .nm{font-size:11px;color:var(--text);text-align:center;max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cat-grid .c.sel .nm{color:var(--primary);font-weight:700}
+.cat-grid .c.sel .ic{outline:2px solid var(--primary);outline-offset:2px}
+.chip-row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.chip{padding:8px 14px;border-radius:20px;background:#e9e9ed;font-size:13px;cursor:pointer;border:none}
+.chip.on{background:var(--primary-soft);color:var(--primary);font-weight:600}
+.f-label{font-size:13px;color:var(--text-2);margin:12px 0 4px}
+.field{background:#f0f0f3;border-radius:12px;padding:12px;margin-bottom:10px}
+.field input,.field textarea,.field select{width:100%;border:none;background:none;outline:none;font-size:15px;color:var(--text);font-family:inherit}
+.field textarea{resize:none}
+.btn-primary{width:100%;padding:14px;border:none;border-radius:14px;background:var(--primary);color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px}
+.btn-primary:disabled{opacity:.5}
+.btn-ghost{width:100%;padding:12px;border:1px solid var(--line);border-radius:14px;background:none;color:var(--text);font-size:15px;cursor:pointer;margin-top:8px}
+
+/* ---------- 列表 ---------- */
+.group-label{font-size:12px;color:var(--text-2);font-weight:600;padding:12px 4px 6px;position:sticky;top:var(--nav-h);background:var(--bg);z-index:5}
+.txn{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:14px;padding:12px;margin-bottom:8px}
+.txn .amt{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.txn .note{font-size:13px;color:var(--text-2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- 报表 ---------- */
+.share-bar{display:flex;height:24px;border-radius:12px;overflow:hidden;margin:8px 0}
+.share-bar .seg2{height:100%}
+.legend{display:flex;align-items:center;gap:8px;padding:6px 0}
+.legend .dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.bar-chart{display:flex;align-items:flex-end;gap:3px;height:140px;padding:8px 0}
+.bar-chart .b{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px}
+.bar-chart .bar{width:70%;border-radius:4px 4px 0 0;min-height:2px}
+
+/* ---------- 弹窗 ---------- */
+.modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:none;align-items:flex-end;justify-content:center}
+.modal-mask.show{display:flex}
+.sheet{background:var(--card);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:16px 16px calc(20px + var(--safe-b));max-height:88vh;overflow-y:auto;animation:up .22s ease}
+@keyframes up{from{transform:translateY(40px)}to{transform:none}}
+.sheet h3{margin:0 0 12px;font-size:17px;text-align:center}
+.sheet .item{padding:14px 4px;border-bottom:1px solid var(--line);cursor:pointer;display:flex;align-items:center;gap:12px}
+.sheet .item:last-child{border-bottom:none}
+
+/* ---------- 空态 / toast ---------- */
+.empty{text-align:center;padding:40px 0;color:var(--text-2)}
+.empty .big{font-size:44px;margin-bottom:8px}
+#toast{position:fixed;left:50%;bottom:calc(var(--tab-h) + var(--safe-b) + 20px);transform:translateX(-50%) translateY(20px);background:rgba(0,0,0,.82);color:#fff;padding:10px 18px;border-radius:20px;font-size:14px;z-index:99;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap;max-width:80%;overflow:hidden;text-overflow:ellipsis}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ---------- 数字键盘 ---------- */
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-radius:14px;overflow:hidden;margin-top:10px}
+.pad button{padding:16px;border:none;background:var(--card);font-size:20px;font-weight:600;cursor:pointer;color:var(--text)}
+.pad button:active{background:#eee}
+.pad button.fn{background:#f0f0f3;color:var(--text-2)}
+.pad button.done{background:var(--primary);color:#fff}
+
+/* ---------- 图表颜色 ---------- */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.pill.income{background:rgba(211,47,47,.1);color:var(--income)}
+.pill.expense{background:rgba(46,125,50,.1);color:var(--expense)}
+.pill.transfer{background:rgba(21,101,192,.1);color:var(--transfer)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <button class="back" id="backBtn" style="display:none">‹</button>
+    <div class="title" id="pageTitle">记账</div>
+    <button class="act" id="topAct" style="display:none"></button>
+  </div>
+  <div class="main" id="main"></div>
+  <nav class="tabbar" id="tabbar"></nav>
+</div>
+<div class="modal-mask" id="modalMask"><div class="sheet" id="modalSheet"></div></div>
+<div id="toast"></div>
+<script src="app.js"></script>
+<script src="ui.js"></script>
+</body>
+</html>
