@@ -1,9 +1,14 @@
-[Uploading README.md…]()
 # 记账本 · 网页版
+
+<p align="center">
+  <img alt="License" src="https://img.shields.io/badge/License-MIT-green.svg">
+  <img alt="Zero Dependency" src="https://img.shields.io/badge/依赖-零-blue.svg">
+  <img alt="Storage" src="https://img.shields.io/badge/存储-本地-orange.svg">
+</p>
 
 一个**零依赖、打开即用**的记账网页应用。手机浏览器点开链接就能记账，无需安装 App、无需注册登录。
 
-> 🔗 **在线体验**：https://student-ledger-11588.app.workbuddy.host/
+> 🔗 **在线体验**：[https://student-ledger-11588.app.workbuddy.host/](https://student-ledger-11588.app.workbuddy.host/)
 
 ## ✨ 功能
 
@@ -45,4 +50,4 @@ ledger-web/
 
 ## 🔗 相关项目
 
-- [ledger-app](https://github.com/) —— 同一套记账业务的原生 KMP 版（Android Jetpack Compose + iOS SwiftUI）
+- [ledger-app](https://github.com/Lusiming2026/ledger-app) —— 同一套记账业务的原生 KMP 版（Android Jetpack Compose + iOS SwiftUI）
